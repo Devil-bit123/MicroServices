@@ -1,0 +1,53 @@
+services:
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      MSSQL_SA_PASSWORD: "TuPassword123!"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
+  auth-service:
+    build:
+      context: ./AuthMicroservice
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - Redis__ConnectionString=redis:6379
+      - ConnectionStrings__AuthDatabase=Server=sqlserver;Database=Auth;User Id=sa;Password=TuPassword123!;TrustServerCertificate=True
+    depends_on:
+      - redis
+      - sqlserver
+
+  products-service:
+    build:
+      context: ./ProductsMicroService
+    ports:
+      - "5003:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - Redis__ConnectionString=redis:6379
+      - ConnectionStrings__ProductsCatalogContext=Server=sqlserver;Database=ProductsCatalog;User Id=sa;Password=TuPassword123!;TrustServerCertificate=True
+    depends_on:
+      - redis
+      - sqlserver
+
+volumes:
+  redis_data:
+  sqlserver_data:

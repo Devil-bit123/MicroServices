@@ -1,0 +1,9 @@
+{
+  "ConnectionStrings": {
+    "ProductsCatalogContext": "Server=sqlserver;Database=ProductsCatalog;User Id=sa;Password=TuPassword123!;TrustServerCertificate=True"
+  },
+  "Redis": {
+    "ConnectionString": "redis:6379",
+    "InstanceName": "ProductCache"
+  }
+}
